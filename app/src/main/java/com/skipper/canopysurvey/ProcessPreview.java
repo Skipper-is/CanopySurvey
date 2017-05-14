@@ -3,6 +3,7 @@ package com.skipper.canopysurvey;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by Skipper on 14/05/2017.
@@ -21,11 +24,17 @@ public class ProcessPreview extends AppCompatActivity {
     private static Button process, reset;
     private static TextView progressText, percentageCover;
     private static Bitmap initialImage;
+    private static float cover = 0;
+    private String byteArrayName;
+    private byte[] byteArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.photo_preview);
+
+      
+
 
         //Define the objects
         imageView = (ImageView) findViewById(R.id.imageView);
@@ -37,10 +46,29 @@ public class ProcessPreview extends AppCompatActivity {
 
         progressText.setText(String.valueOf(seekBar.getProgress()));
 
-        //Read bundle
-        byte[] byteArray = getIntent().getExtras().getByteArray("image");
-        initialImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-        imageView.setImageBitmap(initialImage); //And set the imageView to our bundled bitmap.
+
+        //Read bundle - and see if we've got a saved instance
+        if (savedInstanceState != null){
+            byteArrayName = "imagesave";
+            byteArray = savedInstanceState.getByteArray(byteArrayName);
+            seekBar.setProgress(savedInstanceState.getInt("seekBarProgress"));
+
+            percentageCover.setText(String.format("%.2f",savedInstanceState.getFloat("percentCover")) + "% cover");
+            progressText.setText(String.valueOf(savedInstanceState.getInt("seekBarProgress")));
+            percentageCover.setVisibility(View.VISIBLE);
+
+            Bitmap restoredImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+            imageView.setImageBitmap(restoredImage);
+
+        }else{
+            byteArrayName = "image";
+
+            byteArray = getIntent().getExtras().getByteArray(byteArrayName);
+
+            initialImage = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+            imageView.setImageBitmap(initialImage);
+        }
+
 
         //Process the SeekBar
 
@@ -100,8 +128,8 @@ public class ProcessPreview extends AppCompatActivity {
 
                 }
             }
-            float cover = ((float)black/(float)total)*100;
-            percentageCover.setText(String.format("%.2f",cover));
+            cover = ((float)black/(float)total)*100;
+            percentageCover.setText(String.format("%.2f",cover) + "% cover");
             percentageCover.setVisibility(View.VISIBLE);
             return after;
         } else {
@@ -115,6 +143,26 @@ public class ProcessPreview extends AppCompatActivity {
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             imageView.setImageBitmap(imageBitmap);
         }*/
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        Bitmap save = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+        int percentsave = seekBar.getProgress();
+        //float cover is there too
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        save.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray2 = stream.toByteArray();
+        outState.putByteArray("imagesave",byteArray2);
+
+
+        outState.putInt("seekBarProgress",percentsave);
+
+        outState.putFloat("percentCover",cover);
+
+        super.onSaveInstanceState(outState);
+    }
 
 
 }
