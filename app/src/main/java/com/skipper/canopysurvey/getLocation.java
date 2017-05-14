@@ -3,11 +3,15 @@ package com.skipper.canopysurvey;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +22,8 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import java.io.ByteArrayOutputStream;
 
 public class getLocation extends AppCompatActivity implements
         ConnectionCallbacks,
@@ -36,6 +42,12 @@ public class getLocation extends AppCompatActivity implements
 
     protected TextView latitude, longitude;
 
+    protected String byteArrayName = "imagesave";
+    protected Float cover;
+    protected byte[] byteArray;
+    protected ImageView imageView;
+    protected TextView percentageCover;
+    protected Bitmap image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +56,27 @@ public class getLocation extends AppCompatActivity implements
 
         latitude = (TextView) findViewById(R.id.lat);
         longitude = (TextView) findViewById(R.id.lng);
-
+        imageView = (ImageView) findViewById(R.id.imageView2);
 
         buildGoogleApiClient();
+
+        if (savedInstanceState != null){
+            byteArray = savedInstanceState.getByteArray(byteArrayName);
+            cover = savedInstanceState.getFloat("percentCover");
+
+        }else{
+            Bundle bundle = getIntent().getExtras();
+            byteArray = bundle.getByteArray(byteArrayName);
+            cover = bundle.getFloat("percentCover");
+        }
+
+        image = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+        imageView.setImageBitmap(image);
+
+        percentageCover = (TextView) findViewById(R.id.percentageCover);
+        percentageCover.setText(String.format("%.2f",cover) + "% cover");
     }
+
 
     protected void deleteButton (View v){
         Intent intent = new Intent(this,MainActivity.class);
@@ -162,5 +191,19 @@ public class getLocation extends AppCompatActivity implements
             }
         }
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Bitmap save = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+       //float cover is there too
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        save.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray2 = stream.toByteArray();
+        outState.putByteArray("imagesave",byteArray2);
+
+        outState.putFloat("percentCover",cover);
+        super.onSaveInstanceState(outState);
     }
 }

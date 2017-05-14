@@ -118,6 +118,18 @@ public class ProcessPreview extends AppCompatActivity {
     }
 
     public void nextPressed (View v){
+        Bundle bundle = new Bundle();
+
+        Bitmap save = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        save.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray2 = stream.toByteArray();
+        bundle.putByteArray("imagesave",byteArray2);
+        bundle.putFloat("percentCover",cover);
+
+        Intent intent = new Intent(this,getLocation.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
 
             }
 

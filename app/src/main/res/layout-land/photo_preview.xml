@@ -119,6 +119,7 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginTop="24dp"
+                android:onClick="nextPressed"
                 android:text="Next"
                 android:visibility="invisible"
                 app:layout_constraintLeft_toRightOf="@+id/imageView"
