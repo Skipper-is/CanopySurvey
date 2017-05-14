@@ -19,7 +19,7 @@ public class ProcessPreview extends AppCompatActivity {
     private static ImageView imageView;
     private static SeekBar seekBar;
     private static Button process, reset;
-    private static TextView progressText;
+    private static TextView progressText, percentageCover;
     private static Bitmap initialImage;
 
     @Override
@@ -33,6 +33,7 @@ public class ProcessPreview extends AppCompatActivity {
         reset = (Button) findViewById(R.id.reset);
         process = (Button) findViewById(R.id.process);
         progressText = (TextView) findViewById(R.id.seekBarProgress);
+        percentageCover = (TextView) findViewById(R.id.percentageCover);
 
         progressText.setText(String.valueOf(seekBar.getProgress()));
 
@@ -68,6 +69,8 @@ public class ProcessPreview extends AppCompatActivity {
 
     public void resetPressed (View v){
         imageView.setImageBitmap(initialImage);
+        percentageCover.setText("");
+        percentageCover.setVisibility(View.INVISIBLE);
     }
 
     public static Bitmap runProcessing(Bitmap before){
@@ -97,7 +100,9 @@ public class ProcessPreview extends AppCompatActivity {
 
                 }
             }
-
+            float cover = ((float)black/(float)total)*100;
+            percentageCover.setText(String.format("%.2f",cover));
+            percentageCover.setVisibility(View.VISIBLE);
             return after;
         } else {
             return null;
