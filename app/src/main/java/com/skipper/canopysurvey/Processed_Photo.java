@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
  * Created by Skipper on 14/05/2017.
  */
 
-public class processed_photo extends AppCompatActivity{
+public class Processed_Photo extends AppCompatActivity{
 
     @Override
     protected void onCreate (Bundle savedInstanceState){

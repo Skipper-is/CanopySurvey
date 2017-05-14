@@ -127,7 +127,7 @@ public class ProcessPreview extends AppCompatActivity {
         bundle.putByteArray("imagesave",byteArray2);
         bundle.putFloat("percentCover",cover);
 
-        Intent intent = new Intent(this,getLocation.class);
+        Intent intent = new Intent(this,GetLocation.class);
         intent.putExtras(bundle);
         startActivity(intent);
 

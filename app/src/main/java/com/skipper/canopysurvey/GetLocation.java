@@ -3,6 +3,7 @@ package com.skipper.canopysurvey;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -25,7 +26,7 @@ import com.google.android.gms.location.LocationServices;
 
 import java.io.ByteArrayOutputStream;
 
-public class getLocation extends AppCompatActivity implements
+public class GetLocation extends AppCompatActivity implements
         ConnectionCallbacks,
         OnConnectionFailedListener,
         LocationListener {
@@ -44,6 +45,7 @@ public class getLocation extends AppCompatActivity implements
 
     protected String byteArrayName = "imagesave";
     protected Float cover;
+    protected double lat = 0, lng = 0;
     protected byte[] byteArray;
     protected ImageView imageView;
     protected TextView percentageCover;
@@ -80,6 +82,18 @@ public class getLocation extends AppCompatActivity implements
 
     protected void deleteButton (View v){
         Intent intent = new Intent(this,MainActivity.class);
+        startActivity(intent);
+    }
+
+    protected void saveButton (View v){
+       DatabaseHelper db = new DatabaseHelper(this);
+        db.addRecord(new CoverRecord(byteArray, cover, lat, lng));
+        int count = db.getRecordCount();
+
+        Log.d("Count:", count + " records");
+        db.close();
+        Toast.makeText(this, "Record Added!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
 
@@ -130,10 +144,12 @@ public class getLocation extends AppCompatActivity implements
         Location mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         if (mCurrentLocation !=null){
-            String lat = Double.toString(mCurrentLocation.getLatitude());
-            String lng = Double.toString(mCurrentLocation.getLongitude());
-            latitude.setText(lat);
-            longitude.setText(lng);
+            String _lat = Double.toString(mCurrentLocation.getLatitude());
+            String _lng = Double.toString(mCurrentLocation.getLongitude());
+            latitude.setText(_lat);
+            longitude.setText(_lng);
+            lng = mCurrentLocation.getLongitude();
+            lat = mCurrentLocation.getLatitude();
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
@@ -151,11 +167,13 @@ public class getLocation extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
         //What do we do with a drunken sailor? Find out the lat and Lng
-        String lat = Double.toString(location.getLatitude());
-        String lng = Double.toString(location.getLongitude());
-        latitude.setText(lat);
-        longitude.setText(lng);
+        String _lat = Double.toString(location.getLatitude());
+        String _lng = Double.toString(location.getLongitude());
+        latitude.setText(_lat);
+        longitude.setText(_lng);
         Log.d("Updated","Location Updated");
+        lng = location.getLongitude();
+        lat = location.getLatitude();
 
     }
 
