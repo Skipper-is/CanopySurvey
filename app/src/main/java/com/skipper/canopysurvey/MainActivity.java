@@ -67,4 +67,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void tableClick(View v){
+        Intent intent = new Intent(this,DisplayData.class);
+        startActivity(intent);
+    }
+
 }
