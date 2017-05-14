@@ -40,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    protected void locationClick (View v){
+        Intent intent = new Intent(this, getLocation.class);
+        startActivity(intent);
+    }
+
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if(takePictureIntent.resolveActivity(getPackageManager()) != null){

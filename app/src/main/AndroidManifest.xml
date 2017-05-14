@@ -29,6 +29,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".getLocation"></activity>
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+        </intent-filter>
     </application>
 
 </manifest>
