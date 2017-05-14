@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Canopy Survey</string>
+    <string name="title_activity_get_location">Get Location</string>
+    <string name="api_key">AIzaSyCiLIJUomqeGkSRL-h24s1GOIajZAy21Qc</string>
 </resources>
