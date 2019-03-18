@@ -38,7 +38,7 @@ public class GetLocation extends AppCompatActivity implements
 
     public static final long FASTEST = UPDATE_INTERVAL / 2;
 
-      protected GoogleApiClient mGoogleApiClient;
+    protected GoogleApiClient mGoogleApiClient;
     protected LocationRequest mLocationRequest;
 
     protected TextView latitude, longitude;

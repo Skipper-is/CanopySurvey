@@ -136,6 +136,8 @@ public class ProcessPreview extends AppCompatActivity {
     public static Bitmap runProcessing(Bitmap before){
         if (before !=null){
             int BLUE = 0;
+            int GREEN = 0;
+            int GRVI = 0;
             Bitmap after = Bitmap.createBitmap(before.getWidth(),before.getHeight(),before.getConfig());
 
             int pixel, width, height, total, black = 0, blue = 0;
@@ -148,6 +150,7 @@ public class ProcessPreview extends AppCompatActivity {
 
                     pixel = before.getPixel(x,y);
                     BLUE = Color.blue(pixel);
+                    GREEN = Color.green(pixel);
 
                     if(BLUE < seekBar.getProgress()){
                         BLUE = 0;
@@ -156,6 +159,8 @@ public class ProcessPreview extends AppCompatActivity {
                         BLUE = 255;
                         blue++;
                     }
+
+
                     after.setPixel(x,y,Color.argb(255,0,0,BLUE));
 
                 }

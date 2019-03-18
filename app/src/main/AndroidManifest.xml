@@ -28,12 +28,12 @@
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
-        <activity android:name=".GetLocation" />
+        <activity android:name=".GetLocation" >
 
         <intent-filter>
             <action android:name="android.intent.action.VIEW" />
         </intent-filter>
-
+        </activity>
         <activity android:name=".DisplayData"></activity>
     </application>
 
