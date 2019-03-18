@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
 import java.security.AccessControlContext;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Skipper on 14/05/2017.
@@ -73,11 +75,28 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             if (cursor != null) {
                 cursor.moveToFirst();
                 CoverRecord coverRecord = new CoverRecord(Integer.parseInt(cursor.getString(0)), cursor.getBlob(1), cursor.getFloat(2), cursor.getDouble(3), cursor.getDouble(4));
+                cursor.close();
                 return coverRecord;
             } else {
+
                 return null;
             }
 
+        }
+
+        public List<CoverRecord> getList(){
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+            List<CoverRecord> list = new ArrayList<>();
+            if (cursor.moveToFirst()){
+                while (!cursor.isAfterLast()){
+                    CoverRecord record = new CoverRecord(cursor.getInt(0), cursor.getBlob(1), cursor.getFloat(2), cursor.getDouble(3), cursor.getDouble(4));
+                    list.add(record);
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            return list;
         }
 
         public int getRecordCount() {

@@ -2,136 +2,38 @@ package com.skipper.canopysurvey;
 
 import android.content.Intent;
 import android.content.res.Resources;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
+
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.widget.LinearLayout;
 
-import static java.security.AccessController.getContext;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DisplayData extends AppCompatActivity {
+    private RecyclerView recyclerView;
+    private RecordCardAdapter mAdapter;
+    private List<CoverRecord> recordList = new ArrayList<>();
+    private DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_data);
-
-        TableLayout tableLayout = (TableLayout) findViewById(R.id.tableLayout);
-
-        //add header to table
-        TableRow row = new TableRow(this);
-
-        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT);
-        params.setMargins(dpToInt(2),dpToInt(2),dpToInt(2),dpToInt(2));
-        params.gravity = Gravity.CENTER;
-        row.setLayoutParams(params);
-
-        String[] headerText={"ID","Image","Cover %", "Delete",};
-        for (String c:headerText){
-            TextView tv = new TextView(this);
-
-            tv.setLayoutParams(params);
-
-            tv.setTextSize(dpToInt(5));
-            tv.setTextColor(ContextCompat.getColor(this,R.color.backgroundColour));
-            tv.setText(c);
-            row.addView(tv);
-        }
-        row.setBackgroundResource(R.color.colorPrimaryDark);
-        tableLayout.addView(row);
-
-        final DatabaseHelper db = new DatabaseHelper(this);
-        SQLiteDatabase database = db.getReadableDatabase();
-        database.beginTransaction();
-        try{
-            String selectQuery = "Select * FROM " + DatabaseHelper.TABLE_NAME;
-            Cursor cursor = database.rawQuery(selectQuery,null);
-
-            if(cursor.getCount()>0) {
-                while (cursor.moveToNext()) {
-                    final int _id = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.COLUMN_NAME_ID));
-                    byte[] byteArray = cursor.getBlob(cursor.getColumnIndex(DatabaseHelper.COLUMN_NAME_IMAGE));
-                    float cover = cursor.getFloat(cursor.getColumnIndex(DatabaseHelper.COLUMN_NAME_COVER));
-                    double lat = cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.COLUMN_NAME_LAT));
-                    double lng = cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.COLUMN_NAME_LON));
-
-                    row = new TableRow(this);
-                    row.setLayoutParams(params);
-
-                    //Oh this is annoying, I'm going to have to do each one individually
-                    TextView tv = new TextView(this);
-
-                    tv.setLayoutParams(params);
-                    tv.setTextSize(dpToInt(5));
-                    tv.setText(String.valueOf(_id));
-                    row.addView(tv);
-
-                    //Image! This is the tricky bit
-                    ImageView imageView = new ImageView(this);
-
-                    imageView.setImageBitmap(new bitmapHelper().bitmapHelper(byteArray));
-                    imageView.setLayoutParams(params);
-                    row.addView(imageView);
-
-
-                    tv = new TextView(this);
-                    tv.setLayoutParams(params);
-
-                    tv.setTextSize(dpToInt(5));
-                    tv.setText(String.format("%.2f",cover) + "%");
-                    row.addView(tv);
-
-                    ImageButton imageButton = new ImageButton (this);
-                    Drawable icon = getResources().getDrawable(android.R.drawable.ic_delete);
-                    imageButton.setBackgroundDrawable(icon);
-                    imageButton.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT));
-
-
-                    imageButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            deleteRecord(_id);
-
-                            reset();
-                        }
-                    });
-
-                    row.addView(imageButton);
-
-                    tableLayout.addView(row);
-
-
-                }
-                database.setTransactionSuccessful();
-            }
-        }catch (SQLiteException e){
-            e.printStackTrace();
-        }finally {
-            database.endTransaction();
-            database.close();
-            db.close();
-        }
-
-
-
-
-
-
-
+        recyclerView = findViewById(R.id.recycler_view);
+        new getRecordListAsync().execute();
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayout.HORIZONTAL));
+        mAdapter = new RecordCardAdapter(recordList);
+        recyclerView.setAdapter(mAdapter);
     }
 
     private int dpToInt(int dp) {
@@ -139,11 +41,10 @@ public class DisplayData extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent (this, MainActivity.class);
-        startActivity(intent);
+
+    private void recordListFiller(){
+        List<CoverRecord> _tempRecords = new ArrayList<>();
+
     }
 
     private void deleteRecord(int id) {
@@ -156,4 +57,27 @@ public class DisplayData extends AppCompatActivity {
         Intent intent = new Intent(this, DisplayData.class);
         startActivity(intent);
     }
+    private class getRecordListAsync extends AsyncTask<Void, Void, Void>{
+        @Override
+        protected Void doInBackground(Void... voids) {
+            recordList = getRecords();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Log.d("COVER","Length of list is:" + recordList.size());
+            mAdapter = new RecordCardAdapter(recordList);
+            recyclerView.setAdapter(mAdapter);
+            mAdapter.notifyDataSetChanged();
+            super.onPostExecute(aVoid);
+        }
+    }
+    private List<CoverRecord> getRecords(){
+        db = new DatabaseHelper(getApplicationContext());
+        List<CoverRecord> list = db.getList();
+        db.close();
+        return list;
+    }
+
 }
